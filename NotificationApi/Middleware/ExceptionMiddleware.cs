@@ -1,9 +1,9 @@
 // Middleware/ExceptionMiddleware.cs
 using System.Net;
 using System.Text.Json;
-using MaiApi.Models;
+using NotificationApi.Models;
 
-namespace MaiApi.Middleware
+namespace NotificationApi.Middleware
 {
     public class ExceptionMiddleware
     {

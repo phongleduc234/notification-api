@@ -1,9 +1,9 @@
 // Controllers/EmailUsersController.cs
 using Microsoft.AspNetCore.Mvc;
-using MaiApi.Services;
-using MaiApi.Models;
+using NotificationApi.Services;
+using NotificationApi.Models;
 
-namespace MaiApi.Controllers
+namespace NotificationApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

@@ -1,5 +1,5 @@
 // Models/EmailUser.cs
-namespace MaiApi.Models
+namespace NotificationApi.Models
 {
     public class EmailUser
     {

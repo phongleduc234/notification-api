@@ -1,13 +1,13 @@
 ﻿// Program.cs
 
 using Microsoft.EntityFrameworkCore;
-using MaiApi.Data;
-using MaiApi.Repositories;
-using MaiApi.Services;
+using NotificationApi.Data;
+using NotificationApi.Repositories;
+using NotificationApi.Services;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Microsoft.AspNetCore.HttpOverrides;
-using MaiApi.Middleware;
+using NotificationApi.Middleware;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +22,9 @@ builder.Configuration.AddCommandLine(args);
 // Add services to the container.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Đăng ký dịch vụ khởi tạo webhook
+builder.Services.AddHostedService<TelegramWebhookInitializer>();
 
 // Add Redis connection
 builder.Services.AddSingleton(sp =>

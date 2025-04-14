@@ -1,8 +1,8 @@
 // Data/ApplicationDbContext.cs
 using Microsoft.EntityFrameworkCore;
-using MaiApi.Models;
+using NotificationApi.Models;
 
-namespace MaiApi.Data
+namespace NotificationApi.Data
 {
     public class ApplicationDbContext : DbContext
     {

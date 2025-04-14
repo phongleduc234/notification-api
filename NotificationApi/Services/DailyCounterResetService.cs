@@ -2,7 +2,7 @@
 using StackExchange.Redis;
 using Microsoft.Extensions.Options;
 
-namespace MaiApi.Services
+namespace NotificationApi.Services
 {
     public class DailyCounterResetService : BackgroundService
     {

@@ -3,7 +3,7 @@ workload:
 
 image:
   registry: docker.io
-  repository: phongleduc/mail-api
+  repository: phongleduc/notification-api
   tag: latest
   pullPolicy: Always
 
@@ -11,7 +11,7 @@ replicaCount: 3
 
 # Thêm các tùy chỉnh tên
 nameOverride: "dotnet-core-api"
-fullnameOverride: "mail-api-service"
+fullnameOverride: "notification-api-service"
 
 imagePullSecrets:
   - name: regcred
@@ -20,11 +20,11 @@ service:
   type: ClusterIP
   port: 8080
   targetPort: 8080
-  name: mail-api-service 
+  name: notification-api-service 
 
 # Tên deployment tùy chỉnh
 deployment:
-  name: mail-api-deployment
+  name: notification-api-deployment
 
 # Annotations để force redeploy
 podAnnotations: {}
@@ -32,9 +32,9 @@ podAnnotations: {}
 # Tên ingress tùy chỉnh
 ingress:
   enabled: true
-  name: mail-api-ingress
+  name: notification-api-ingress
   ingressClassName: nginx
-  hostname: mail-api.cuder.xyz
+  hostname: notification-api.cuder.xyz
   path: /
   pathType: Prefix
   annotations:
@@ -45,15 +45,15 @@ ingress:
   tls: true
   extraTls:
     - hosts:
-        - mail-api.cuder.xyz
-      secretName: mail-api-tls
+        - notification-api.cuder.xyz
+      secretName: notification-api-tls
 
 containerPorts:
   http: 8080
 
 # Môi trường từ Secret
 extraEnvVarsFromSecret:
-  - secretName: mail-api-secret
+  - secretName: notification-api-secret
     name: ConnectionStrings__DefaultConnection
     envVar: ConnectionStrings__DefaultConnection
     

@@ -1,5 +1,5 @@
 // Models/ApiException.cs
-namespace MaiApi.Models
+namespace NotificationApi.Models
 {
     public class ApiException : Exception
     {

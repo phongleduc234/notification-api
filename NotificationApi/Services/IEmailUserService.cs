@@ -1,8 +1,8 @@
 // Services/IEmailUserService.cs
-using MaiApi.Models;
-using MaiApi.Repositories;
+using NotificationApi.Models;
+using NotificationApi.Repositories;
 
-namespace MaiApi.Services
+namespace NotificationApi.Services
 {
     public interface IEmailUserService
     {

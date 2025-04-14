@@ -1,9 +1,9 @@
 // Repositories/IEmailUserRepository.cs
-using MaiApi.Models;
+using NotificationApi.Models;
 using Microsoft.EntityFrameworkCore;
-using MaiApi.Data;
+using NotificationApi.Data;
 
-namespace MaiApi.Repositories
+namespace NotificationApi.Repositories
 {
     public interface IEmailUserRepository
     {

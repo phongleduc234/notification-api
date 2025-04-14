@@ -1,4 +1,4 @@
-name: Build and Deploy Mail API
+name: Build and Deploy Notification API
 
 on:
   push:
@@ -38,8 +38,8 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/mail-api:${{ steps.set_tag.outputs.image_tag }} .
-          docker push ${{ secrets.DOCKER_USERNAME }}/mail-api:${{ steps.set_tag.outputs.image_tag }}
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/notification-api:${{ steps.set_tag.outputs.image_tag }} .
+          docker push ${{ secrets.DOCKER_USERNAME }}/notification-api:${{ steps.set_tag.outputs.image_tag }}
 
   deploy:
     needs: build
@@ -75,12 +75,12 @@ jobs:
 
       - name: Copy values.yaml to server
         run: |
-          scp ./helm/values.yaml ssh.cuder.xyz:/tmp/mail-api-values.yaml
+          scp ./helm/values.yaml ssh.cuder.xyz:/tmp/notification-api-values.yaml
 
       - name: Apply Kubernetes deployment
         run: |
           ssh ssh.cuder.xyz "
-            RELEASE=mail-api
+            RELEASE=notification-api
             NAMESPACE=devops
 
             if helm ls -n \$NAMESPACE | grep -q \$RELEASE; then
@@ -96,8 +96,8 @@ jobs:
             echo 'Installing Helm chart...'
             helm upgrade --install \$RELEASE devops-charts/dotnet-core-api \
               --namespace \$NAMESPACE --create-namespace \
-              -f /tmp/mail-api-values.yaml \
-              --set image.repository=${{ secrets.DOCKER_USERNAME }}/mail-api \
+              -f /tmp/notification-api-values.yaml \
+              --set image.repository=${{ secrets.DOCKER_USERNAME }}/notification-api \
               --set image.tag=${{ needs.build.outputs.image_tag }} \
               --set image.pullPolicy=Always
           "

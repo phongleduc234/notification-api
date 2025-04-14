@@ -2,9 +2,9 @@
 using System.Net;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
-using MaiApi.Models;
+using NotificationApi.Models;
 
-namespace MaiApi.Services
+namespace NotificationApi.Services
 {
     public interface IEmailService
     {
