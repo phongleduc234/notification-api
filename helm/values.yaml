@@ -64,29 +64,41 @@ extraEnvVarsFromSecret:
   - secretName: shared-secret
     name: SmtpMail__Password
     envVar: SmtpMail__Password
-
-# Môi trường từ ConfigMap
-extraEnvVarsFromConfigMap:
-  - configMapName: shared-config
+    
+  - secretName: shared-secret
     name: SmtpMail__Host
     envVar: SmtpMail__Host
 
-  - configMapName: shared-config
+  - secretName: shared-secret
     name: SmtpMail__Port
     envVar: SmtpMail__Port
 
-  - configMapName: shared-config
+  - secretName: shared-secret
     name: SmtpMail__FromEmail
     envVar: SmtpMail__FromEmail
 
-  - configMapName: shared-config
+  - secretName: shared-secret
     name: SmtpMail__FromName
     envVar: SmtpMail__FromName
 
-  - configMapName: shared-config
+  - secretName: shared-secret
     name: SmtpMail__SenderEmail
     envVar: SmtpMail__SenderEmail
 
+  - secretName: shared-secret
+    name: Redis__Host
+    envVar: Redis__Host
+
+  - secretName: shared-secret
+    name: Redis__Port
+    envVar: Redis__Port
+
+  - secretName: shared-secret
+    name: Redis__Password
+    envVar: Redis__Password
+
+# Môi trường từ ConfigMap
+extraEnvVarsFromConfigMap:
   - configMapName: shared-config
     name: Logging__LogLevel__Default
     envVar: Logging__LogLevel__Default
