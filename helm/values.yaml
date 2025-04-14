@@ -1,0 +1,102 @@
+image:
+  registry: docker.io
+  repository: phongleduc/mail-api
+  tag: latest
+  pullPolicy: Always
+
+replicaCount: 1
+
+# Thêm các tùy chỉnh tên
+nameOverride: "dotnet-core-api"
+fullnameOverride: "mail-api-service"
+
+imagePullSecrets:
+  - name: regcred
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+  name: mail-api-service 
+
+# Tên deployment tùy chỉnh
+deployment:
+  name: mail-api-deployment
+
+# Annotations để force redeploy
+podAnnotations: {}
+
+# Tên ingress tùy chỉnh
+ingress:
+  enabled: true
+  name: mail-api-ingress
+  ingressClassName: nginx
+  hostname: mail-api.cuder.xyz
+  path: /
+  pathType: Prefix
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # Thêm annotation để xử lý path của Swagger UI
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  tls: true
+  extraTls:
+    - hosts:
+        - mail-api.cuder.xyz
+      secretName: mail-api-tls
+
+containerPorts:
+  http: 8080
+
+# Môi trường từ Secret
+extraEnvVarsFromSecret:   
+  - secretName: shared-secret
+    name: SmtpMail__UserName
+    envVar: SmtpMail__UserName
+
+  - secretName: shared-secret
+    name: SmtpMail__Password
+    envVar: SmtpMail__Password
+
+# Môi trường từ ConfigMap
+extraEnvVarsFromConfigMap:
+  - configMapName: shared-config
+    name: SmtpMail__Host
+    envVar: SmtpMail__Host
+
+  - configMapName: shared-config
+    name: SmtpMail__Port
+    envVar: SmtpMail__Port
+
+  - configMapName: shared-config
+    name: SmtpMail__FromEmail
+    envVar: SmtpMail__FromEmail
+
+  - configMapName: shared-config
+    name: SmtpMail__FromName
+    envVar: SmtpMail__FromName
+
+  - configMapName: shared-config
+    name: SmtpMail__SenderEmail
+    envVar: SmtpMail__SenderEmail
+
+  - configMapName: shared-config
+    name: Logging__LogLevel__Default
+    envVar: Logging__LogLevel__Default
+
+  - configMapName: shared-config
+    name: Logging__LogLevel__Microsoft.AspNetCore
+    envVar: Logging__LogLevel__Microsoft.AspNetCore
+
+# Biến môi trường cố định
+extraEnvVars:
+  - name: ASPNETCORE_ENVIRONMENT
+    value: "Production"
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi

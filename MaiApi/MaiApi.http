@@ -1,0 +1,6 @@
+@MaiApi_HostAddress = http://localhost:5208
+
+GET {{MaiApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
