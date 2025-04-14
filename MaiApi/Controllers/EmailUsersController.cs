@@ -32,14 +32,43 @@ namespace MaiApi.Controllers
                 });
             }
 
-            var user = await _userService.CreateUserAsync(request.Username, request.Email);
-
-            return Ok(new ApiResponse<EmailUser>
+            try
             {
-                Success = true,
-                Message = "User created successfully",
-                Data = user
-            });
+                var user = await _userService.CreateUserAsync(request.Username, request.Email);
+
+                return Ok(new ApiResponse<EmailUser>
+                {
+                    Success = true,
+                    Message = "User created successfully",
+                    Data = user
+                });
+            }
+            catch (ApiException ex)
+            {
+                return StatusCode(ex.StatusCode, new ApiResponse<EmailUser>
+                {
+                    Success = false,
+                    Message = ex.Message
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // For backward compatibility, catching InvalidOperationException too
+                return BadRequest(new ApiResponse<EmailUser>
+                {
+                    Success = false,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating user");
+                return StatusCode(500, new ApiResponse<EmailUser>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred. Please try again later."
+                });
+            }
         }
     }
 

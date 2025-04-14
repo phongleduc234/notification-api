@@ -7,6 +7,7 @@ using MaiApi.Services;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Microsoft.AspNetCore.HttpOverrides;
+using MaiApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,6 +83,7 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
+app.UseExceptionMiddleware();
 app.MapHealthChecks("/health");
 app.UseRouting();
 app.UseAuthorization();

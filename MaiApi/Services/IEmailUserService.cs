@@ -29,20 +29,19 @@ namespace MaiApi.Services
             _configuration = configuration;
             _repository = repository;
         }
-
         public async Task<EmailUser> CreateUserAsync(string username, string email)
         {
             // Check if user already exists
             var existingByUsername = await _repository.GetByUsernameAsync(username);
             if (existingByUsername != null)
             {
-                throw new InvalidOperationException($"Username '{username}' is already taken");
+                throw new ApiException($"Username '{username}' is already taken");
             }
 
             var existingByEmail = await _repository.GetByEmailAsync(email);
             if (existingByEmail != null)
             {
-                throw new InvalidOperationException($"Email '{email}' is already registered");
+                throw new ApiException($"Email '{email}' is already registered");
             }
 
             var apiKey = GenerateApiKey();
@@ -55,7 +54,7 @@ namespace MaiApi.Services
 
             await _repository.CreateAsync(user);
             _logger.LogInformation("Created new email API user: {Username}", username);
-            
+
             return user;
         }
 
