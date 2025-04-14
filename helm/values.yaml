@@ -49,7 +49,11 @@ containerPorts:
   http: 8080
 
 # Môi trường từ Secret
-extraEnvVarsFromSecret:   
+extraEnvVarsFromSecret:
+  - secretName: mail-api-secret
+    name: ConnectionStrings__DefaultConnection
+    envVar: ConnectionStrings__DefaultConnection
+    
   - secretName: shared-secret
     name: SmtpMail__UserName
     envVar: SmtpMail__UserName
