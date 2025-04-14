@@ -114,11 +114,16 @@ namespace MaiApi.Services
 
         private string GenerateApiKey()
         {
-            return Convert.ToBase64String(Guid.NewGuid().ToByteArray())
-                .Replace("+", "")
-                .Replace("/", "")
-                .Replace("=", "")
-                .Substring(0, 32);
+            // Generate a longer string by combining multiple GUIDs
+            var key = string.Concat(
+                Guid.NewGuid().ToString("N"),
+                Guid.NewGuid().ToString("N")
+            );
+
+            // This will give us at least 64 characters (32 per GUID in "N" format)
+            // Now we can safely take the first 32 characters
+            return key.Substring(0, 32);
         }
+
     }
 }
