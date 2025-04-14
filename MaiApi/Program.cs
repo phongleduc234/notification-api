@@ -1,4 +1,4 @@
-// Program.cs
+﻿// Program.cs
 
 using Microsoft.EntityFrameworkCore;
 using MaiApi.Data;
@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Microsoft.AspNetCore.HttpOverrides;
 using MaiApi.Middleware;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,31 @@ builder.Configuration.AddCommandLine(args);
 // Add services to the container.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add Redis connection
+builder.Services.AddSingleton(sp =>
+{
+    var redisConfig = builder.Configuration.GetSection("Redis");
+    var host = redisConfig["Host"] ?? "localhost";
+    var port = redisConfig["Port"] ?? "6379";
+    var password = redisConfig["Password"] ?? "";
+
+    var configOptions = new ConfigurationOptions
+    {
+        AbortOnConnectFail = false,
+        ConnectRetry = 3,
+        ConnectTimeout = 5000
+    };
+
+    configOptions.EndPoints.Add($"{host}:{port}");
+
+    if (!string.IsNullOrEmpty(password))
+    {
+        configOptions.Password = password;
+    }
+    return ConnectionMultiplexer.Connect(configOptions);
+});
+
 
 builder.Services.AddScoped<IEmailUserRepository, EmailUserRepository>();
 builder.Services.AddScoped<IEmailUserService, EmailUserService>();
