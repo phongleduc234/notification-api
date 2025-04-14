@@ -86,6 +86,22 @@ extraEnvVarsFromSecret:
     envVar: SmtpMail__SenderEmail
 
   - secretName: shared-secret
+    name: Telegram__BotToken
+    envVar: Telegram__BotToken
+
+  - secretName: shared-secret
+    name: Telegram__ChatId
+    envVar: Telegram__ChatId
+
+  - secretName: shared-secret
+    name: Telegram__AutoSetWebhook
+    envVar: Telegram__AutoSetWebhook
+
+  - secretName: shared-secret
+    name: Telegram__WebhookBaseUrl
+    envVar: Telegram__WebhookBaseUrl
+
+  - secretName: shared-secret
     name: Redis__Host
     envVar: Redis__Host
 
