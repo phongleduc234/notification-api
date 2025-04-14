@@ -118,6 +118,12 @@ namespace MaiApi.Services
                 var password = smtpSettings["Password"];
                 var fromName = smtpSettings["FromName"] ?? "DevOps";
 
+                Console.WriteLine($"Host : {host}");
+                Console.WriteLine($"Port : {port}");
+                Console.WriteLine($"User : {userName}");
+                Console.WriteLine($"Password : {password}");
+                Console.WriteLine($"FromName : {fromName}");
+
                 using var client = new SmtpClient(host, port)
                 {
                     EnableSsl = false,
@@ -131,7 +137,7 @@ namespace MaiApi.Services
 
                     Subject = request.Subject,
                     Body = request.Body,
-                    IsBodyHtml = true
+                    IsBodyHtml = request.IsHtml
                 };
 
                 message.To.Add(request.To);
