@@ -135,10 +135,10 @@ namespace MaiApi.Services
                     IsBodyHtml = request.IsHtml
                 };
 
-                Console.WriteLine($"Host : " { smtpSettings["Host"] });
-                Console.WriteLine($"Port : " { smtpSettings["Port"] });
-                Console.WriteLine($"User : " { smtpSettings["User"] });
-                Console.WriteLine($"Password : " { smtpSettings["Password"] });
+                Console.WriteLine($"Host : {smtpSettings["Host"]}");
+                Console.WriteLine($"Port : {smtpSettings["Port"]}");
+                Console.WriteLine($"User : {smtpSettings["User"]}");
+                Console.WriteLine($"Password : {smtpSettings["Password"]}");
 
                 message.To.Add(request.To);
 
