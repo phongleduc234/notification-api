@@ -119,7 +119,7 @@ namespace MaiApi.Services
                     int.Parse(smtpSettings["Port"]));
 
                 var credentials = new System.Net.NetworkCredential(
-                    smtpSettings["User"],
+                    smtpSettings["UserName"],
                     smtpSettings["Password"]);
 
                 client.Credentials = credentials;
@@ -128,17 +128,12 @@ namespace MaiApi.Services
                 var message = new MailMessage
                 {
                     From = new MailAddress(
-                        smtpSettings["User"],
+                        smtpSettings["UserName"],
                         smtpSettings["FromName"] ?? "DevOps"),
                     Subject = request.Subject,
                     Body = request.Body,
                     IsBodyHtml = request.IsHtml
                 };
-
-                Console.WriteLine($"Host : {smtpSettings["Host"]}");
-                Console.WriteLine($"Port : {smtpSettings["Port"]}");
-                Console.WriteLine($"User : {smtpSettings["User"]}");
-                Console.WriteLine($"Password : {smtpSettings["Password"]}");
 
                 message.To.Add(request.To);
 
