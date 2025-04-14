@@ -1,4 +1,5 @@
 // Services/IEmailService.cs
+using System.Net;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
 using MaiApi.Models;
@@ -110,29 +111,27 @@ namespace MaiApi.Services
 
             try
             {
-                // Here we would use the SMTP settings from appsettings.json
-                // but adapt them for this specific user's context
                 var smtpSettings = _configuration.GetSection("SmtpMail");
+                var host = smtpSettings["Host"];
+                var port = int.Parse(smtpSettings["Port"]);
+                var userName = smtpSettings["UserName"];
+                var password = smtpSettings["Password"];
+                var fromName = smtpSettings["FromName"] ?? "DevOps";
 
-                using var client = new SmtpClient(
-                    smtpSettings["Host"],
-                    int.Parse(smtpSettings["Port"]));
-
-                var credentials = new System.Net.NetworkCredential(
-                    smtpSettings["UserName"],
-                    smtpSettings["Password"]);
-
-                client.Credentials = credentials;
-                client.EnableSsl = false;
-
-                var message = new MailMessage
+                using var client = new SmtpClient(host, port)
                 {
-                    From = new MailAddress(
-                        smtpSettings["UserName"],
-                        smtpSettings["FromName"] ?? "DevOps"),
+                    EnableSsl = false,
+                    Credentials = new NetworkCredential(userName, password)
+                };
+
+                using var message = new MailMessage
+                {
+                    // From with display name
+                    From = new MailAddress(userName, fromName),
+
                     Subject = request.Subject,
                     Body = request.Body,
-                    IsBodyHtml = request.IsHtml
+                    IsBodyHtml = true
                 };
 
                 message.To.Add(request.To);
