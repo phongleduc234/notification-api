@@ -50,13 +50,15 @@ namespace MaiApi.Services
                     smtpSettings["User"],
                     smtpSettings["Password"]);
 
+                var fromName = smtpSettings["FromName"] ?? "DevOps";
+
                 client.Credentials = credentials;
                 client.EnableSsl = false;
 
                 var message = new System.Net.Mail.MailMessage
                 {
                     From = new System.Net.Mail.MailAddress(
-                        smtpSettings["FromEmail"],
+                        smtpSettings["User"],
                         smtpSettings["FromName"]),
                     Subject = request.Subject,
                     Body = request.Body,
