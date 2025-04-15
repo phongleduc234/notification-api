@@ -24,6 +24,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Đăng ký dịch vụ khởi tạo webhook
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<ITelegramBotService, TelegramBotService>();
 builder.Services.AddHostedService<TelegramWebhookInitializer>();
 
