@@ -1,7 +1,5 @@
 // Services/TelegramBotService.cs
-using System.Net.Http.Json;
 using System.Text.Json;
-using Microsoft.Extensions.Options;
 
 namespace NotificationApi.Services
 {
