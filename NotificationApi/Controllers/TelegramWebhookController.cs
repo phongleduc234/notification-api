@@ -11,20 +11,14 @@ namespace NotificationApi.Controllers
     public class TelegramWebhookController : ControllerBase
     {
         private readonly ITelegramBotService _telegramService;
-        private readonly IEmailService _emailService;
         private readonly ILogger<TelegramWebhookController> _logger;
-        private readonly IConfiguration _configuration;
 
         public TelegramWebhookController(
             ITelegramBotService telegramService,
-            IEmailService emailService,
-            ILogger<TelegramWebhookController> logger,
-            IConfiguration configuration)
+            ILogger<TelegramWebhookController> logger)
         {
             _telegramService = telegramService;
-            _emailService = emailService;
             _logger = logger;
-            _configuration = configuration;
         }
 
         [HttpPost("webhook")]
@@ -37,7 +31,6 @@ namespace NotificationApi.Controllers
 
                 // Xử lý cập nhật từ Telegram ở đây
                 // Ví dụ: Trích xuất tin nhắn và phản hồi
-                
                 if (update.TryGetProperty("message", out var messageElement) &&
                     messageElement.TryGetProperty("text", out var textElement) &&
                     messageElement.TryGetProperty("chat", out var chatElement) &&
@@ -119,8 +112,8 @@ namespace NotificationApi.Controllers
             }
         }
 
-        [HttpGet("test")]
-        public async Task<ActionResult<ApiResponse<bool>>> SendTestMessage([FromQuery] string message = "Test message from API")
+        [HttpGet("send")]
+        public async Task<ActionResult<ApiResponse<bool>>> SendMessage([FromQuery] string message = "Test message from API")
         {
             var result = await _telegramService.SendMessageAsync(message);
             
@@ -129,7 +122,7 @@ namespace NotificationApi.Controllers
                 return Ok(new ApiResponse<bool>
                 {
                     Success = true,
-                    Message = "Test message sent successfully",
+                    Message = "Message sent successfully",
                     Data = true
                 });
             }
@@ -138,7 +131,7 @@ namespace NotificationApi.Controllers
                 return BadRequest(new ApiResponse<bool>
                 {
                     Success = false,
-                    Message = "Failed to send test message",
+                    Message = "Failed to send message",
                     Data = false
                 });
             }

@@ -22,7 +22,10 @@ namespace NotificationApi.Services
         private readonly ILogger<TelegramBotService> _logger;
         private readonly string _botToken;
         private readonly string _defaultChatId;
-
+        private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
         public TelegramBotService(
             IHttpClientFactory httpClientFactory,
             IConfiguration configuration,
@@ -48,7 +51,7 @@ namespace NotificationApi.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<TelegramResponse>(content);
+                    var result = JsonSerializer.Deserialize<TelegramResponse>(content, _jsonOptions);
                     
                     if (result?.Ok == true)
                     {
@@ -83,7 +86,7 @@ namespace NotificationApi.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<TelegramResponse>(content);
+                    var result = JsonSerializer.Deserialize<TelegramResponse>(content, _jsonOptions);
                     
                     if (result?.Ok == true)
                     {
@@ -125,7 +128,7 @@ namespace NotificationApi.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<TelegramResponse>(content);
+                    var result = JsonSerializer.Deserialize<TelegramResponse>(content, _jsonOptions);
                     
                     if (result?.Ok == true)
                     {
@@ -149,12 +152,12 @@ namespace NotificationApi.Services
                 return false;
             }
         }
-        
-        private class TelegramResponse
-        {
-            public bool Ok { get; set; }
-            public string? Description { get; set; }
-        }
+    }
+    public class TelegramResponse
+    {
+        public bool Ok { get; set; }
+        public string? Result { get; set; }
+        public string? Description { get; set; }
     }
 }
 
