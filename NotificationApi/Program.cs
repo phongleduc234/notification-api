@@ -10,6 +10,17 @@ using Microsoft.AspNetCore.HttpOverrides;
 using NotificationApi.Middleware;
 using StackExchange.Redis;
 using System.Text.Json;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using Serilog;
+using Serilog.Enrichers.Span;
+using Serilog.Formatting.Compact;
+using Serilog.Sinks.Http.BatchFormatters;
+
+var serviceName = "Notification API Service";
+var serviceVersion = "1.0.0";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +30,35 @@ builder.Configuration
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
 builder.Configuration.AddCommandLine(args);
+
+var serviceUrl = builder.Configuration.GetSection("ServiceUrl");
+builder.Logging.AddOpenTelemetry(options =>
+{
+    options.SetResourceBuilder(ResourceBuilder.CreateDefault()
+        .AddService(serviceName: serviceName, serviceVersion: serviceVersion));
+    options.AddOtlpExporter(otlpOptions =>
+    {
+        otlpOptions.Endpoint = new Uri(serviceUrl["OpenTelemetry"]);
+        otlpOptions.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+    });
+});
+
+// Serilog config — enrich log with trace/span ID and send logs to Fluent Bit
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.WithSpan() // 👈 Thêm trace_id, span_id
+    .Enrich.WithProperty("service", serviceName)
+    .Enrich.WithProperty("version", serviceVersion)
+    .Enrich.WithProperty("environment", builder.Environment.EnvironmentName)
+    .WriteTo.Console(new CompactJsonFormatter())
+    .WriteTo.Http(
+        requestUri: serviceUrl["FluentBit"],
+        queueLimitBytes: null, // Set to null or a specific value as per your requirements
+        batchFormatter: new ArrayBatchFormatter(),
+        httpClient: new CustomHttpClient())
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Add this with the other service registrations
 builder.Services.Configure<JsonSerializerOptions>(options =>
@@ -40,6 +80,43 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<ITelegramBotService, TelegramBotService>();
 builder.Services.AddHostedService<TelegramWebhookInitializer>();
+
+// Thêm cấu hình OpenTelemetry
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource
+        .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation(options =>
+        {
+            options.RecordException = true;
+            options.EnrichWithHttpRequest = (activity, request) =>
+            {
+                activity.SetTag("http.request.headers", string.Join(",", request.Headers.Select(h => $"{h.Key}={h.Value}")));
+            };
+            options.EnrichWithHttpResponse = (activity, response) =>
+            {
+                activity.SetTag("http.response.headers", string.Join(",", response.Headers.Select(h => $"{h.Key}={h.Value}")));
+            };
+        })
+        .AddHttpClientInstrumentation(options =>
+        {
+            options.RecordException = true;
+        })
+        .AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri(serviceUrl["OpenTelemetry"]); // Địa chỉ OpenTelemetry Collector
+            options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+        }))
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri(serviceUrl["OpenTelemetry"]); // Địa chỉ OpenTelemetry Collector
+            options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+        }));
+
 
 // Add Redis connection
 builder.Services.AddSingleton(sp =>
@@ -85,9 +162,9 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "User Mail API",
+        Title = "Notification API",
         Version = "v1",
-        Description = "API for user mail management",
+        Description = "API for notification management",
         Contact = new OpenApiContact
         {
             Name = "Development Team",
