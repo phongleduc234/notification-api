@@ -10,14 +10,15 @@ using Microsoft.AspNetCore.HttpOverrides;
 using NotificationApi.Middleware;
 using StackExchange.Redis;
 using System.Text.Json;
-using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Compact;
 using Serilog.Sinks.Http.BatchFormatters;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Logs;
+using NotificationApi.HealthChecks;
 
 var serviceName = "Notification API Service";
 var serviceVersion = "1.0.0";
@@ -31,31 +32,38 @@ builder.Configuration
     .AddEnvironmentVariables();
 builder.Configuration.AddCommandLine(args);
 
-var serviceUrl = builder.Configuration.GetSection("ServiceUrl");
+var openTelemetry = builder.Configuration.GetSection("OpenTelemetry");
+var openTelemetryUrl = $"http://{openTelemetry["Host"]}:{openTelemetry["Port"]}";
 builder.Logging.AddOpenTelemetry(options =>
 {
     options.SetResourceBuilder(ResourceBuilder.CreateDefault()
         .AddService(serviceName: serviceName, serviceVersion: serviceVersion));
     options.AddOtlpExporter(otlpOptions =>
     {
-        otlpOptions.Endpoint = new Uri(serviceUrl["OpenTelemetry"]);
+        otlpOptions.Endpoint = new Uri(openTelemetryUrl);
         otlpOptions.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
     });
 });
 
 // Serilog config — enrich log with trace/span ID and send logs to Fluent Bit
+var fluentBit = builder.Configuration.GetSection("FluentBit");
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.WithSpan() // 👈 Thêm trace_id, span_id
+    .Enrich.WithSpan()
     .Enrich.WithProperty("service", serviceName)
     .Enrich.WithProperty("version", serviceVersion)
     .Enrich.WithProperty("environment", builder.Environment.EnvironmentName)
     .WriteTo.Console(new CompactJsonFormatter())
     .WriteTo.Http(
-        requestUri: serviceUrl["FluentBit"],
-        queueLimitBytes: null, // Set to null or a specific value as per your requirements
+        requestUri: $"http://{fluentBit["Host"]}:{fluentBit["Port"]}",
+        queueLimitBytes: 50 * 1024 * 1024,
         batchFormatter: new ArrayBatchFormatter(),
         httpClient: new CustomHttpClient())
+    .WriteTo.File(
+        path: "logs/notification-api-.log",
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 7,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -104,7 +112,7 @@ builder.Services.AddOpenTelemetry()
         })
         .AddOtlpExporter(options =>
         {
-            options.Endpoint = new Uri(serviceUrl["OpenTelemetry"]); // Địa chỉ OpenTelemetry Collector
+            options.Endpoint = new Uri(openTelemetryUrl); // Địa chỉ OpenTelemetry Collector
             options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
         }))
     .WithMetrics(metrics => metrics
@@ -113,7 +121,7 @@ builder.Services.AddOpenTelemetry()
         .AddRuntimeInstrumentation()
         .AddOtlpExporter(options =>
         {
-            options.Endpoint = new Uri(serviceUrl["OpenTelemetry"]); // Địa chỉ OpenTelemetry Collector
+            options.Endpoint = new Uri(openTelemetryUrl); // Địa chỉ OpenTelemetry Collector
             options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
         }));
 
@@ -151,7 +159,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddHostedService<DailyCounterResetService>();
 
 // Add health checks
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddCheck<FluentBitHealthCheck>("fluent-bit");
 
 // Add controllers
 builder.Services.AddControllers();
