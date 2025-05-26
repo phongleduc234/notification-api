@@ -19,7 +19,7 @@ namespace NotificationApi.HealthChecks
             {
                 var fluentBit = _configuration.GetSection("FluentBit");
                 var host = fluentBit["Host"] ?? "localhost";
-                var port = fluentBit["Port"] ?? "24225";
+                var port = fluentBit["Port"] ?? "24224";
                 var healthPort = fluentBit["ServicePort"] ?? "2020";
 
                 var client = _httpClientFactory.CreateClient();

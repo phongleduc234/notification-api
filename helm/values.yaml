@@ -154,12 +154,24 @@ extraEnvVarsFromConfigMap:
     envVar: Serilog__Enrich
 
   - configMapName: shared-config
-    name: ServiceUrl__FluentBit
-    envVar: ServiceUrl__FluentBit
+    name: FluentBit__Host
+    envVar: FluentBit__Host
 
   - configMapName: shared-config
-    name: ServiceUrl__OpenTelemetry
-    envVar: ServiceUrl__OpenTelemetry
+    name: FluentBit__Port
+    envVar: FluentBit__Port
+
+  - configMapName: shared-config
+    name: FluentBit__ServicePort
+    envVar: FluentBit__ServicePort
+
+  - configMapName: shared-config
+    name: OpenTelemetry__Host
+    envVar: OpenTelemetry__Host
+
+  - configMapName: shared-config
+    name: OpenTelemetry__Port
+    envVar: OpenTelemetry__Port
 
 # Biến môi trường cố định
 extraEnvVars:
