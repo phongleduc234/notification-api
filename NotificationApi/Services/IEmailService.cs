@@ -49,7 +49,7 @@ namespace NotificationApi.Services
 
                 using var client = new SmtpClient(host, port)
                 {
-                    EnableSsl = false,
+                    EnableSsl = true,
                     Credentials = new NetworkCredential(userName, password)
                 };
 
@@ -65,7 +65,7 @@ namespace NotificationApi.Services
 
                 message.To.Add(request.To);
 
-                if (request.Cc != null && request.Cc.Any())
+                if (request.Cc != null && request.Cc.Any(x => !string.IsNullOrWhiteSpace(x)))
                 {
                     foreach (var cc in request.Cc)
                     {
@@ -73,7 +73,7 @@ namespace NotificationApi.Services
                     }
                 }
 
-                if (request.Bcc != null && request.Bcc.Any())
+                if (request.Bcc != null && request.Bcc.Any(x => !string.IsNullOrWhiteSpace(x)))
                 {
                     foreach (var bcc in request.Bcc)
                     {

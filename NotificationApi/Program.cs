@@ -154,6 +154,7 @@ builder.Services.AddSingleton(sp =>
 builder.Services.AddScoped<IEmailUserRepository, EmailUserRepository>();
 builder.Services.AddScoped<IEmailUserService, EmailUserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IDiscordBotService, DiscordBotService>();
 
 // Add a background service to reset daily counters
 builder.Services.AddHostedService<DailyCounterResetService>();

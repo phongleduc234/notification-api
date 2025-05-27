@@ -69,7 +69,7 @@ namespace NotificationApi.Services
             if (user == null) return false;
             
             // Check if daily counters need to be reset
-            if (DateTime.UtcNow.Date > user.LastResetDate.Date)
+            if (DateTime.UtcNow.Date >= user.LastResetDate.Date)
             {
                 user.EmailsSentToday = 0;
                 user.LastResetDate = DateTime.UtcNow;
