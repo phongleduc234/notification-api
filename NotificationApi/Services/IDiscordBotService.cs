@@ -1,6 +1,7 @@
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace NotificationApi.Services
 {
@@ -8,46 +9,70 @@ namespace NotificationApi.Services
     {
         Task SendMessageAsync(string message);
         Task SendEmbedMessageAsync(string title, string description, string color = "0x00ff00");
+        Task InitializeAsync();
     }
 
     public class DiscordBotService : IDiscordBotService
     {
-        private readonly HttpClient _httpClient;
+        private readonly DiscordSocketClient _client;
         private readonly string _botToken;
-        private readonly string _channelId;
+        private readonly ulong _channelId;
         private readonly ILogger<DiscordBotService> _logger;
-        private const string DiscordApiBaseUrl = "https://discord.com/api/v10";
+        private bool _isInitialized;
 
         public DiscordBotService(
-            IHttpClientFactory httpClientFactory,
             IConfiguration configuration,
             ILogger<DiscordBotService> logger)
         {
-            _httpClient = httpClientFactory.CreateClient("DiscordBot");
             _botToken = configuration["Discord:BotToken"] ?? throw new ArgumentNullException("Discord:BotToken");
-            _channelId = configuration["Discord:ChannelId"] ?? throw new ArgumentNullException("Discord:ChannelId");
+            _channelId = ulong.Parse(configuration["Discord:ChannelId"] ?? throw new ArgumentNullException("Discord:ChannelId"));
             _logger = logger;
 
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bot {_botToken}");
+            var config = new DiscordSocketConfig
+            {
+                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent,
+                AlwaysDownloadUsers = true
+            };
+
+            _client = new DiscordSocketClient(config);
+            _client.Log += LogAsync;
+        }
+
+        public async Task InitializeAsync()
+        {
+            if (_isInitialized) return;
+
+            try
+            {
+                await _client.LoginAsync(TokenType.Bot, _botToken);
+                await _client.StartAsync();
+                _isInitialized = true;
+                _logger.LogInformation("Discord bot initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to initialize Discord bot");
+                throw;
+            }
         }
 
         public async Task SendMessageAsync(string message)
         {
             try
             {
-                var payload = new
+                if (!_isInitialized)
                 {
-                    content = message
-                };
+                    await InitializeAsync();
+                }
 
-                var json = JsonSerializer.Serialize(payload);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var channel = await _client.GetChannelAsync(_channelId) as IMessageChannel;
+                if (channel == null)
+                {
+                    throw new InvalidOperationException($"Could not find channel with ID {_channelId}");
+                }
 
-                var response = await _httpClient.PostAsync(
-                    $"{DiscordApiBaseUrl}/channels/{_channelId}/messages",
-                    content);
-
-                response.EnsureSuccessStatusCode();
+                await channel.SendMessageAsync(message);
+                _logger.LogInformation("Message sent successfully to Discord");
             }
             catch (Exception ex)
             {
@@ -60,33 +85,49 @@ namespace NotificationApi.Services
         {
             try
             {
-                var payload = new
+                if (!_isInitialized)
                 {
-                    embeds = new[]
-                    {
-                        new
-                        {
-                            title = title,
-                            description = description,
-                            color = Convert.ToInt32(color.Replace("0x", ""), 16)
-                        }
-                    }
-                };
+                    await InitializeAsync();
+                }
 
-                var json = JsonSerializer.Serialize(payload);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var channel = await _client.GetChannelAsync(_channelId) as IMessageChannel;
+                if (channel == null)
+                {
+                    throw new InvalidOperationException($"Could not find channel with ID {_channelId}");
+                }
 
-                var response = await _httpClient.PostAsync(
-                    $"{DiscordApiBaseUrl}/channels/{_channelId}/messages",
-                    content);
+                var embed = new EmbedBuilder()
+                    .WithTitle(title)
+                    .WithDescription(description)
+                    .WithColor(Convert.ToUInt32(color.Replace("0x", ""), 16))
+                    .WithCurrentTimestamp()
+                    .Build();
 
-                response.EnsureSuccessStatusCode();
+                await channel.SendMessageAsync(embed: embed);
+                _logger.LogInformation("Embed message sent successfully to Discord");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error sending embed message to Discord");
                 throw;
             }
+        }
+
+        private Task LogAsync(LogMessage log)
+        {
+            var logLevel = log.Severity switch
+            {
+                LogSeverity.Critical => LogLevel.Critical,
+                LogSeverity.Error => LogLevel.Error,
+                LogSeverity.Warning => LogLevel.Warning,
+                LogSeverity.Info => LogLevel.Information,
+                LogSeverity.Verbose => LogLevel.Debug,
+                LogSeverity.Debug => LogLevel.Debug,
+                _ => LogLevel.Information
+            };
+
+            _logger.Log(logLevel, log.Exception, "[Discord] {Message}", log.Message);
+            return Task.CompletedTask;
         }
     }
 } 

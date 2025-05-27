@@ -159,6 +159,9 @@ builder.Services.AddScoped<IDiscordBotService, DiscordBotService>();
 // Add a background service to reset daily counters
 builder.Services.AddHostedService<DailyCounterResetService>();
 
+// Add Discord bot initialization
+builder.Services.AddHostedService<DiscordBotInitializer>();
+
 // Add health checks
 builder.Services.AddHealthChecks()
     .AddCheck<FluentBitHealthCheck>("fluent-bit");
