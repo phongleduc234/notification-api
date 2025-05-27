@@ -123,6 +123,14 @@ extraEnvVarsFromSecret:
     name: RabbitMq__Password
     envVar: RabbitMq__Password
 
+  - secretName: shared-secret
+    name: Discord__BotToken
+    envVar: Discord__BotToken
+
+  - secretName: shared-secret
+    name: Discord__ChannelId
+    envVar: Discord__ChannelId
+
 # Môi trường từ ConfigMap
 extraEnvVarsFromConfigMap:
   - configMapName: shared-config
