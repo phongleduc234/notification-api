@@ -23,11 +23,4 @@ namespace NotificationApi.Models
         public List<string>? Cc { get; set; }
         public List<string>? Bcc { get; set; }
     }
-
-    public class ApiResponse<T>
-    {
-        public bool Success { get; set; }
-        public string Message { get; set; } = string.Empty;
-        public T? Data { get; set; }
-    }
 }
