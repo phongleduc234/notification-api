@@ -55,8 +55,8 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.WithProperty("environment", builder.Environment.EnvironmentName)
     .WriteTo.Console(new CompactJsonFormatter())
     .WriteTo.Http(
-        requestUri: $"http://{fluentBit["Host"]}:{fluentBit["Port"]}",
-        queueLimitBytes: 50 * 1024 * 1024,
+        requestUri: $"http://{fluentBit["Host"]}:{fluentBit["ServicePort"]}",
+        queueLimitBytes: int.Parse(fluentBit["BufferSize"] ?? "52428800"),
         batchFormatter: new ArrayBatchFormatter(),
         httpClient: new CustomHttpClient())
     .WriteTo.File(
