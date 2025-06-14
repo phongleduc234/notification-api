@@ -30,7 +30,9 @@ namespace NotificationApi.Services
 
             var config = new DiscordSocketConfig
             {
-                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent,
+                GatewayIntents = GatewayIntents.Guilds | 
+                                GatewayIntents.GuildMessages | 
+                                GatewayIntents.MessageContent,
                 AlwaysDownloadUsers = true
             };
 
