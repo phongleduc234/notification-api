@@ -33,11 +33,32 @@ namespace NotificationApi.Services
                 GatewayIntents = GatewayIntents.Guilds | 
                                 GatewayIntents.GuildMessages | 
                                 GatewayIntents.MessageContent,
-                AlwaysDownloadUsers = true
+                AlwaysDownloadUsers = true,
+                ConnectionTimeout = 30000,
+                MessageCacheSize = 100,
+                LogLevel = LogSeverity.Info,
+                UseSystemClock = true,
+                RestRequestTimeout = 30000,
+                RetryMode = RetryMode.AlwaysRetry,
+                DefaultRetryMode = RetryMode.AlwaysRetry,
+                MaxRetries = 3
             };
 
             _client = new DiscordSocketClient(config);
             _client.Log += LogAsync;
+            _client.Disconnected += async (exception) =>
+            {
+                _logger.LogWarning(exception, "Discord client disconnected. Attempting to reconnect...");
+                await Task.Delay(5000); // Đợi 5 giây trước khi thử kết nối lại
+                try
+                {
+                    await _client.StartAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to reconnect Discord client");
+                }
+            };
         }
 
         public async Task InitializeAsync()
