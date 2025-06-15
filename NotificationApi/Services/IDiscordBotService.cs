@@ -32,8 +32,9 @@ namespace NotificationApi.Services
             {
                 GatewayIntents = GatewayIntents.Guilds | 
                                 GatewayIntents.GuildMessages | 
-                                GatewayIntents.MessageContent,
-                AlwaysDownloadUsers = true,
+                                GatewayIntents.MessageContent |
+                                GatewayIntents.GuildMembers,
+                AlwaysDownloadUsers = false,
                 ConnectionTimeout = 30000,
                 MessageCacheSize = 100,
                 LogLevel = LogSeverity.Info,
