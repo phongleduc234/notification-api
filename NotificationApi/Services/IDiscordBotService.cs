@@ -38,10 +38,9 @@ namespace NotificationApi.Services
                 MessageCacheSize = 100,
                 LogLevel = LogSeverity.Info,
                 UseSystemClock = true,
-                RestRequestTimeout = 30000,
-                RetryMode = RetryMode.AlwaysRetry,
-                DefaultRetryMode = RetryMode.AlwaysRetry,
-                MaxRetries = 3
+                HandlerTimeout = 30000,
+                ShardId = 0,
+                TotalShards = 1
             };
 
             _client = new DiscordSocketClient(config);
